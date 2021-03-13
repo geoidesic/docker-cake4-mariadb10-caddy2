@@ -1,0 +1,53 @@
+version: "3.9"
+networks:
+  web-network:
+services:
+  # nginx:
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d
+  #     - ./php:/var/www/html
+  #   ports: 
+  #     - "8888:80"
+  #   tty: true
+  #   networks:
+  #     - web-network
+
+  caddy:
+    image: caddy:latest
+    restart: always
+    volumes:
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/logs:/logs
+      - ./php:/var/www/html
+    ports:
+      - "8888:80"
+    networks:
+      - web-network
+
+  php:
+    build: ./php
+    tty: true
+    restart: always
+    volumes:
+      - ./php:/var/www/html
+    networks:
+      - web-network
+
+  mariadb:
+    image: mariadb
+    restart: always
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: localhost
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "23306:3306"
+    networks:
+      - web-network
